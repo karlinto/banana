@@ -1,0 +1,46 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract BananaThrowGame {
+    struct Player {
+        uint256 bananaCount;
+        bool isEliminated;
+    }
+
+    mapping(address => Player) public players;
+    address[] public playerAddresses;
+
+    event BananaThrown(address indexed from, address indexed to);
+
+    constructor(address[] memory _players) {
+        for (uint256 i = 0; i < _players.length; i++) {
+            players[_players[i]].bananaCount = 10; // Initial banana count for each player
+            players[_players[i]].isEliminated = false;
+            playerAddresses.push(_players[i]);
+        }
+    }
+
+    function throwBanana(address _to) external {
+        require(!players[msg.sender].isEliminated, "You are eliminated from the game.");
+        require(players[_to].bananaCount > 0, "The target player has already been eliminated.");
+
+        players[msg.sender].bananaCount--;
+        emit BananaThrown(msg.sender, _to);
+
+        if (players[msg.sender].bananaCount == 0) {
+            players[msg.sender].isEliminated = true;
+        }
+    }
+
+    function getBananaCount(address _player) external view returns (uint256) {
+        return players[_player].bananaCount;
+    }
+
+    function isPlayerEliminated(address _player) external view returns (bool) {
+        return players[_player].isEliminated;
+    }
+
+    function getNumberOfPlayers() external view returns (uint256) {
+        return playerAddresses.length;
+    }
+}
